@@ -1,0 +1,27 @@
+{
+  "components": {
+    "seeds": {
+      "fabric_Seed": {
+        "src": "src/seeds/fabric_Seed"
+      }
+    },
+    "plugins": {
+      "fileGenerator": {
+        "src": "src/plugins/fileGenerator",
+        "test": "test/plugins/fileGenerator"
+      }
+    },
+    "routers": {}
+  },
+  "dependencies": {
+    "seeds": {},
+    "plugins": {},
+    "routers": {
+      "BindingsDocs": {
+        "project": "webgme-bindings",
+        "path": "node_modules/webgme-bindings/src/routers/BindingsDocs",
+        "mount": "bindings-docs"
+      }
+    }
+  }
+}
