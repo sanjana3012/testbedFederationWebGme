@@ -21,6 +21,7 @@ class fileGenerator(PluginBase):
         self.nodes = {}
         self.credentials = []
         self.credential_file = ""
+        # hello
 
         nodes_list = self.core.load_sub_tree(self.active_node)        
         for node in nodes_list:
