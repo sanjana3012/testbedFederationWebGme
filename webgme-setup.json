@@ -3,12 +3,19 @@
     "seeds": {
       "fabric_Seed": {
         "src": "src/seeds/fabric_Seed"
+      },
+      "fabric_seed_1": {
+        "src": "src/seeds/fabric_seed_1"
       }
     },
     "plugins": {
       "fileGenerator": {
         "src": "src/plugins/fileGenerator",
         "test": "test/plugins/fileGenerator"
+      },
+      "fabFileGenerator": {
+        "src": "src/plugins/fabFileGenerator",
+        "test": "test/plugins/fabFileGenerator"
       }
     },
     "routers": {}
