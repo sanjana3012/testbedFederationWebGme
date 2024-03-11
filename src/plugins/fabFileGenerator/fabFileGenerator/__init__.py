@@ -221,6 +221,8 @@ class fabFileGenerator(PluginBase):
             connection_dict={} #a dictionary containing a layer3 item (self.config_type_layer3["layer3"])
             nodes_in_stitch_connection=[]
 
+            logger.info("HERE INSIDE STITCH CONN LOOP")
+
             interface=[]
             network_conn_name=self.core.get_attribute(conn,'name')
             if self.core.is_connection(conn):
@@ -243,22 +245,22 @@ class fabFileGenerator(PluginBase):
                             connection_dict[f"{network_conn_name}"]["ip_end"]=network_ip_end
                     self.config_type_layer3["layer3"].append(connection_dict)
                 
-                    logger.info(f"Network Connection is: {self.core.get_attribute(conn,'name')}")
-                    source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-                    source_node_name=self.core.get_attribute(source_node,"name")
-                    nodes_in_stitch_connection.append(source_node)
+                logger.info(f"Network Connection is: {self.core.get_attribute(conn,'name')}")
+                source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
+                source_node_name=self.core.get_attribute(source_node,"name")
+                nodes_in_stitch_connection.append(source_node)
 
-                    logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
-                    destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-                    destination_node_name=self.core.get_attribute(destination_node,"name")
-                    nodes_in_stitch_connection.append(destination_node)
-                    logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
-
-
+                logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
+                destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
+                destination_node_name=self.core.get_attribute(destination_node,"name")
+                nodes_in_stitch_connection.append(destination_node)
+                logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
 
 
 
-                    for stitch_node in nodes_in_stitch_connection:
+
+
+                for stitch_node in nodes_in_stitch_connection:
 
                         if self.core.is_instance_of(stitch_node,self.META['Node']):
                             if self.core.is_instance_of(stitch_node,self.META['FabricNode']):
@@ -297,7 +299,7 @@ class fabFileGenerator(PluginBase):
                         elif self.core.is_instance_of(stitch_node,self.META['Network']):
                             node_name=self.core.get_attribute(stitch_node,"name")
                             
-                            # logger.info("HERE INSIDE NETWORK")
+                            logger.info("HERE INSIDE NETWORK")
                             if self.core.is_instance_of(stitch_node,self.META['FabricNetwork']):
                         
                                 if 'fabric_network' not in network_dict: #a dictionary containing all the attributes and values of the fabric network
