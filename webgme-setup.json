@@ -6,6 +6,9 @@
       },
       "fabric_seed_1": {
         "src": "src/seeds/fabric_seed_1"
+      },
+      "fabric_seed_2": {
+        "src": "src/seeds/fabric_seed_2"
       }
     },
     "plugins": {

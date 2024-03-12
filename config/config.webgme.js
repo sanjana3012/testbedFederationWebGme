@@ -10,6 +10,7 @@ var config = require('webgme/config/config.default'),
 config.plugin.basePaths.push(__dirname + '/../src/plugins');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_Seed');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_seed_1');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_seed_2');
 
 
 
