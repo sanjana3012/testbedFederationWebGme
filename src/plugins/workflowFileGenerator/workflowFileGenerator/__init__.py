@@ -38,10 +38,14 @@ class workflowFileGenerator(PluginBase):
         self.fabric_networks_with_multiple_nodes=[]
         self.chi_networks_with_multiple_nodes=[]
         self.network_nodes_list=[]
-        network_dict={}
+        self.network_dict={}
         self.nodes = {}
         self.experiment_config={}
         self.fab_file=" "
+        self.node_list=[]
+        self.network_list=[]
+        self.stitch_network_connection_list=[]
+        self.simple_network_connection_list=[]
         
 
         self.load_nodes()
@@ -51,7 +55,7 @@ class workflowFileGenerator(PluginBase):
         self.create_provider()
 
         self.create_fab_file()
-
+   
 
 
         # commit_info = self.util.save(self.root_node, self.commit_hash, 'master', 'Python plugin updated the model')
@@ -102,10 +106,7 @@ class workflowFileGenerator(PluginBase):
 
     def check_experiment_type(self):
 
-        node_list=[]
-        network_list=[]
-        stitch_network_connection_list=[]
-        simple_network_connection_list=[]
+        
         simple_fabric_connection_list=[]
         simple_chi_connection_list=[]
 
@@ -113,84 +114,94 @@ class workflowFileGenerator(PluginBase):
             node = self.nodes[path]
             if (self.core.is_instance_of(node, self.META['Node']) ):
                 # logger.info(f"Nodes present in the experiment: {self.core.get_attribute(node, 'name')}")
-                node_list.append(node)
+                self.node_list.append(node)
                 
             if self.core.is_instance_of(node, self.META['Network']):
                 # logger.info(f"Networks present in the experiment: {self.core.get_attribute(node, 'name')}")
-                network_list.append(node)
+                self.network_list.append(node)
             
             if(self.core.is_instance_of(node,self.META['StitchConnection'])):
                 # logger.info(f"Stitch Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
-                stitch_network_connection_list.append(node)
+                self.stitch_network_connection_list.append(node)
 
             elif(self.core.is_instance_of(node,self.META['SimpleNetworkConnection'])):
                 # logger.info(f"Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
-                simple_network_connection_list.append(node)
+                self.simple_network_connection_list.append(node)
 
 
-        if len(simple_network_connection_list)>0:
-            if len(stitch_network_connection_list)>0:
+        if len(self.simple_network_connection_list)>0:
+            if len(self.stitch_network_connection_list)>0:
                 logger.info("full stitch")
-                self.full_stitch([node_list,network_list,simple_network_connection_list,stitch_network_connection_list])
+                self.full_stitch()
                 
                 
             else:
                 logger.info("single provider")
-                self.single_provider(node_list,network_list,simple_network_connection_list)
+                self.single_provider()
                
                 
-        elif len(stitch_network_connection_list)>0:
+        elif len(self.stitch_network_connection_list)>0:
                
             logger.info("HELLOOOOO networks only")
-            # self.networks_only([network_list,stitch_network_connection_list])
+            self.networks_only()
             
             
                 
         else:
             logger.info("simple node")
+            self.simple_node()
     
-    def create_config(self,network_connection_list):
+    def create_config(self,conn):
             self.experiment_config["config"]=[]
             config_type_layer3={}
             connection_dict={}
-            for conn in network_connection_list:
+            
                 #a dictionary containing a layer3 item (self.config_type_layer3["layer3"])
                 # nodes_in_stitch_connection=[]
 
                 
-                network_conn_name=self.core.get_attribute(conn,'name')
-                if self.core.is_connection(conn):
-                    if "layer3" not in config_type_layer3:
-                        config_type_layer3["layer3"] =[]
-                        if f"{network_conn_name}" not in connection_dict: #a dictionary containing all the attributes and values of a particular connection
-                            connection_dict[f"{network_conn_name}"]={}
-                            conn_attributes = self.core.get_attribute_names(conn)
-                        for attribute_name in conn_attributes:
-                            if attribute_name=="subnet":
-                                network_subnet=self.core.get_attribute(conn,attribute_name)
-                                connection_dict[f"{network_conn_name}"]["subnet"]=network_subnet
-                            elif attribute_name=="gateway":
-                                network_gateway= self.core.get_attribute(conn,attribute_name)
-                                connection_dict[f"{network_conn_name}"]["gateway"]=network_gateway
-                            elif attribute_name=="ip_start":
-                                network_ip_start=self.core.get_attribute(conn,attribute_name)
-                                connection_dict[f"{network_conn_name}"]["ip_start"]=network_ip_start
-                            elif attribute_name=="ip_end":
-                                network_ip_end=self.core.get_attribute(conn,attribute_name)
-                                connection_dict[f"{network_conn_name}"]["ip_end"]=network_ip_end
-                        config_type_layer3["layer3"].append(connection_dict)
-                        self.experiment_config["config"].append(config_type_layer3)
+            network_conn_name=self.core.get_attribute(conn,'name')
+            if self.core.is_connection(conn):
+                if "layer3" not in config_type_layer3:
+                    config_type_layer3["layer3"] =[]
+                    if f"{network_conn_name}" not in connection_dict: #a dictionary containing all the attributes and values of a particular connection
+                        connection_dict[f"{network_conn_name}"]={}
+                        conn_attributes = self.core.get_attribute_names(conn)
+                    for attribute_name in conn_attributes:
+                        if attribute_name=="subnet":
+                            network_subnet=self.core.get_attribute(conn,attribute_name)
+                            connection_dict[f"{network_conn_name}"]["subnet"]=network_subnet
+                        elif attribute_name=="gateway":
+                            network_gateway= self.core.get_attribute(conn,attribute_name)
+                            connection_dict[f"{network_conn_name}"]["gateway"]=network_gateway
+                        elif attribute_name=="ip_start":
+                            network_ip_start=self.core.get_attribute(conn,attribute_name)
+                            connection_dict[f"{network_conn_name}"]["ip_start"]=network_ip_start
+                        elif attribute_name=="ip_end":
+                            network_ip_end=self.core.get_attribute(conn,attribute_name)
+                            connection_dict[f"{network_conn_name}"]["ip_end"]=network_ip_end
+                    config_type_layer3["layer3"].append(connection_dict)
+                    self.experiment_config["config"].append(config_type_layer3)
 
     
     def finalize_resource_configuration(self):
         # This should be called after all nodes have been processed
         if 'resource' not in self.experiment_config:
             self.experiment_config['resource'] = []
-        self.experiment_config['resource'].append(self.resource_type_node)
-        self.experiment_config['resource'].append(self.resource_type_network)
+        if len(self.node_list)>0:
+            self.experiment_config['resource'].append(self.resource_type_node)
+            self.resource_type_node = {'node': []}
+            self.resource_type_node_initialized = False 
+        if len(self.network_list)>0:
+            self.resource_type_network['network'].append(self.network_dict)
+                
+            self.experiment_config['resource'].append(self.resource_type_network)
+            self.resource_type_network_initialized = False
+            self.resource_type_network = {'network': []}
+            self.network_dict={}
         # Reset for potential future use
-        self.resource_type_node = {'node': []}
-        self.resource_type_node_initialized = False       
+          
+
     
     def process_node(self,node,len_node_list=0,stitch="no"):
     
@@ -238,15 +249,11 @@ class workflowFileGenerator(PluginBase):
                 node_dict[f"{node_name}"]['provider'] = "'{{chi.chi_provider}}'"
 
             self.resource_type_node['node'].append(node_dict)
-            # if self.count_of_nodes==1:
-            #     self.finalize_resource_configuration()
-    
-    
 
-    
+
     def process_network(self,node,interface,network_conn_name,interface_required="yes",stitch="no"):
-        network_dict={}
-        if interface_required == "no" and not self.core.get_pointer_path(node, 'credential_file'):
+        
+        if interface_required == "no" and len(self.node_list)==0 and not self.core.get_pointer_path(node, 'credential_file'):
             raise Exception(f"Credential file not attached to {self.core.get_attribute(node, 'name')}")
         
         if not self.resource_type_network_initialized:
@@ -254,43 +261,83 @@ class workflowFileGenerator(PluginBase):
         
         logger.info(f"HELOOOOOO INTERFACE {interface}")
         if self.core.is_instance_of(node, self.META['FabricNetwork']):
-            node_attributes = self.core.get_attribute_names(node)
-            if 'fabric_network' not in network_dict:
-                network_dict['fabric_network']={}
-                network_dict['fabric_network']['provider']="'{{fabric.fabric_provider}}'"
-                network_dict['fabric_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
-                network_dict['fabric_network']['interface']=interface
+            # node_attributes = self.core.get_attribute_names(node)
+            if 'fabric_network' not in self.network_dict: #use self.network_dict
+                self.network_dict['fabric_network']={}
+                self.network_dict['fabric_network']['provider']="'{{fabric.fabric_provider}}'"
+                self.network_dict['fabric_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
+                if interface_required=="yes":
+                    self.network_dict['fabric_network']['interface']=interface
                 if stitch=="yes":
-                    network_dict['fabric_network']['stitch_with']= '{{ network.chi_network }}'
+                    self.network_dict['fabric_network']['stitch_with']= '{{ network.chi_network }}'
+               
         
         if self.core.is_instance_of(node,self.META['ChiNetwork']):
                         
-            if 'chi_network' not in network_dict: #a dictionary containing all the attributes and values of the fabric network
+            if 'chi_network' not in self.network_dict: #a dictionary containing all the attributes and values of the fabric network
             
-                network_dict['chi_network']={}
-                network_dict['chi_network']['provider']="'{{chi.chi_provider}}'"
-                network_dict['chi_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
+                self.network_dict['chi_network']={}
+                self.network_dict['chi_network']['provider']="'{{chi.chi_provider}}'"
+                self.network_dict['chi_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
                 site=self.core.get_attribute(node,"site")
-                network_dict['chi_network']['site']=f"{site}"
+                self.network_dict['chi_network']['site']=f"{site}"
+               
               
-        self.resource_type_network['network'].append(network_dict)
+        
         
 
 
             
         
-    def process_simple_network_connection(self,network_conn_name,simple_network_connection_list,len_node_list=0,stitch="no"):
+    def process_simple_network_connection(self,network_conn_name,len_node_list=0,stitch="no"):
 
         
-        
-        interface_required="yes"
+        interface_required="no"
         interface=[]
+        Flag=True
 
-        if stitch=="no":
-            self.create_config(simple_network_connection_list)
+        # if stitch=="no":
+        #     self.create_config(self.simple_network_connection_list)
         
+        if len(self.node_list)>0: 
+            for conn in self.simple_network_connection_list:
+                nodes_in_simple_connection=[]
+                if stitch=="no":
+                    network_conn_name=self.core.get_attribute(conn,'name')
+                logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
+                source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
+                logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
 
-        for conn in simple_network_connection_list:
+                source_node_name=self.core.get_attribute(source_node,"name")
+                nodes_in_simple_connection.append(source_node)
+
+                
+                destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
+                logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
+            
+
+                destination_node_name=self.core.get_attribute(destination_node,"name")
+                nodes_in_simple_connection.append(destination_node)
+
+                if self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Node']):
+                            
+                    if stitch=="no" and len(self.network_list)==1:
+                        self.create_config(conn)
+
+
+                    # for node in nodes_in_simple_connection:
+                    #     if self.core.is_instance_of(node, self.META['Node']):
+
+                    #         logger.info(f"NAME OF NODE INSIDE THE PROCESS SIMPLE FUNCTIONAGHHH {self.core.get_attribute(node,'name')}")
+                            
+                    if self.core.is_instance_of(destination_node, self.META['FabricNode']):
+                        interface_required="yes"
+                            
+                        node_name=self.core.get_attribute(destination_node,"name")
+                        interface.append(f"{{{{ node.{node_name} }}}}")
+                    self.process_node(destination_node,len_node_list,stitch)
+                
+        for conn in self.simple_network_connection_list:
             nodes_in_simple_connection=[]
             if stitch=="no":
                 network_conn_name=self.core.get_attribute(conn,'name')
@@ -310,56 +357,27 @@ class workflowFileGenerator(PluginBase):
             nodes_in_simple_connection.append(destination_node)
 
             if self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Node']):
-
-                for node in nodes_in_simple_connection:
-                    if self.core.is_instance_of(node, self.META['Node']):
-
-                        logger.info(f"NAME OF NODE INSIDE THE PROCESS SIMPLE FUNCTIONAGHHH {self.core.get_attribute(node,'name')}")
-                        
-                        if self.core.is_instance_of(node, self.META['FabricNode']):
-                             
-                            node_name=self.core.get_attribute(node,"name")
-                            interface.append(f"{{{{ node.{node_name} }}}}")
-                        self.process_node(node,len_node_list,stitch)
                 
-        for conn in simple_network_connection_list:
-            nodes_in_simple_connection=[]
-            if stitch=="no":
-                network_conn_name=self.core.get_attribute(conn,'name')
-            logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
-            source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-            logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
+                if self.core.is_instance_of(source_node, self.META['FabricNetwork']):
+                    
+                    if not self.check_has_node_been_processed_before(source_node):
+                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
+                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
 
-            source_node_name=self.core.get_attribute(source_node,"name")
-            nodes_in_simple_connection.append(source_node)
-
-            
-            destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-            logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
-        
-
-            destination_node_name=self.core.get_attribute(destination_node,"name")
-            nodes_in_simple_connection.append(destination_node)
-
-            if self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Node']):
+            elif self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Network']):
+                if stitch=="no":
+                    self.create_config(conn)
+                if not self.check_has_node_been_processed_before(source_node):
+                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
+                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
 
 
-                for node in nodes_in_simple_connection:
-                
-                    if self.core.is_instance_of(node, self.META['Network']):
-                        
-                        if not self.check_has_node_been_processed_before(node):
-                            logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(node,'name')}")
-                            self.process_network(node,InlineList(interface),network_conn_name,interface_required,stitch)
-        
-
-
-
-    def process_stitch_connection(self,stitch_network_connection_list):
-
+    def process_stitch_connection(self,network_conn_name,stitch="yes"):
+        interface=[]
+        interface_required="no"
         nodes_in_stitch_connection=[]
 
-        for conn in stitch_network_connection_list:
+        for conn in self.stitch_network_connection_list:
 
             source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
             logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
@@ -374,25 +392,52 @@ class workflowFileGenerator(PluginBase):
 
             destination_node_name=self.core.get_attribute(destination_node,"name")
             nodes_in_stitch_connection.append(destination_node)
+
+            if not self.check_has_node_been_processed_before(source_node):
+                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
+                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
+            
+            if not self.check_has_node_been_processed_before(destination_node):
+                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(destination_node,'name')}")
+                        self.process_network(destination_node,InlineList(interface),network_conn_name,interface_required,stitch)
+            
+
+
+
     
         
             
         
-    def full_stitch(self,concepts):
+    def full_stitch(self):
 
-        node_list,network_list,simple_network_connection_list,stitch_network_connection_list=concepts
-        for conn in stitch_network_connection_list:
+        
+        for conn in self.stitch_network_connection_list:
             network_conn_name=self.core.get_attribute(conn,"name")
-        self.create_config(stitch_network_connection_list)
-        self.process_simple_network_connection(network_conn_name,simple_network_connection_list,len(node_list),stitch="yes")
+            self.create_config(conn)
+        self.process_simple_network_connection(network_conn_name,len(self.node_list),stitch="yes")
+        self.process_stitch_connection(network_conn_name,stitch="yes")
         self.finalize_resource_configuration()
 
-    def single_provider(self,concepts):
-        node_list,network_list,simple_network_connection_list=concepts
-        for conn in simple_network_connection_list:
+    def single_provider(self):
+        
+        for conn in self.simple_network_connection_list:
             network_conn_name=self.core.get_attribute(conn,"name")
-        self.process_simple_network_connection(network_conn_name,simple_network_connection_list,len(node_list),stitch="no")
+        self.process_simple_network_connection(network_conn_name,len(self.node_list),stitch="no")
         self.finalize_resource_configuration()
+
+    def simple_node(self):
+        for node in self.node_list:
+            self.process_node(node,len(self.node_list),stitch="no")
+            self.finalize_resource_configuration()
+
+    def networks_only(self):
+        for conn in self.stitch_network_connection_list:
+            network_conn_name=self.core.get_attribute(conn,"name")
+            self.create_config(conn)
+        self.process_stitch_connection(network_conn_name,stitch="yes")
+        self.finalize_resource_configuration()
+
+
 
         
     
