@@ -9,6 +9,9 @@
       },
       "fabric_seed_2": {
         "src": "src/seeds/fabric_seed_2"
+      },
+      "fine_tune_seed_1": {
+        "src": "src/seeds/fine_tune_seed_1"
       }
     },
     "plugins": {

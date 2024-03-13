@@ -11,6 +11,7 @@ config.plugin.basePaths.push(__dirname + '/../src/plugins');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_Seed');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_seed_1');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_seed_2');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fine_tune_seed_1');
 
 
 
