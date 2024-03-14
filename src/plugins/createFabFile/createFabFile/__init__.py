@@ -8,7 +8,7 @@ from webgme_bindings import PluginBase
 import yaml
 
 # Setup a logger
-logger = logging.getLogger('workflowFileGenerator')
+logger = logging.getLogger('createFabFile')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)  # By default it logs to stderr..
 handler.setLevel(logging.INFO)
@@ -26,7 +26,7 @@ def represent_inline_list(dumper, data):
 # Register the InlineList representer with PyYAML
 yaml.add_representer(InlineList, represent_inline_list)
 
-class workflowFileGenerator(PluginBase):
+class createFabFile(PluginBase):
     def main(self):
         
         

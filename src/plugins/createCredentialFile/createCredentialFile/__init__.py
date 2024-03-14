@@ -8,7 +8,7 @@ from webgme_bindings import PluginBase
 import yaml
 
 # Setup a logger
-logger = logging.getLogger('fileGenerator')
+logger = logging.getLogger('createCredentialFile')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)  # By default it logs to stderr..
 handler.setLevel(logging.INFO)
@@ -17,7 +17,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-class fileGenerator(PluginBase):
+class createCredentialFile(PluginBase):
     def main(self):      
         self.nodes = {}
         self.credentials = []
