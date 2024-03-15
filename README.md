@@ -13,19 +13,23 @@ First, you need to install the following to use the testbed federation tool:
 - MongoDB. Pull the mongodb image in docker desktop and make a new container fro.
   - Steps to create a new container from the image:
     - Click the run button beside the mongo image and set the optional settings
+    - Give a name to your container. I gave it sanjanadb.
+      - Set host path as :
 
-Give a name to your container. I gave it sanjanadb.
-Set host path as :
+        ```
+        /Users/<yourname>/DB
+        ```
 
-```
-/Users/<yourname>/DB
-```
-Where DB is a folder I created to store all the database contents.
-​Set the Container path as
 
-```
-/data/db
-```
+
+      Where DB is a folder I created to store all the data related to the WebGME model.
+     - ​Set the Container path as
+
+      ```
+      /data/db
+      ```
+      
+
 ### Dependencies and deployment
 Once you have all the prerequisities, we can get to the fun part!
 - To use my tool, first clone it using :
