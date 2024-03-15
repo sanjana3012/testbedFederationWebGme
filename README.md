@@ -15,20 +15,18 @@ First, you need to install the following to use the testbed federation tool:
     - Click the run button beside the mongo image and set the optional settings
     - Give a name to your container. I gave it sanjanadb.
       - Set host path as :
-
-        ```
+          ```
         /Users/<yourname>/DB
         ```
 
 
 
       Where DB is a folder I created to store all the data related to the WebGME model.
-     - ​Set the Container path as
-
+      - Set the Container path as
+       
       ```
       /data/db
       ```
-      
 
 ### Dependencies and deployment
 Once you have all the prerequisities, we can get to the fun part!
