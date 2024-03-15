@@ -58,13 +58,16 @@ class createCredentialFile(PluginBase):
                 logger.info("attribute names are: ", chi_attributes)
                 for attribute_name in chi_attributes:
                     if attribute_name=="project_id":
-                        self.credentials_dict["chi"]["project_id"]={}
+                        self.credentials_dict["chi"]["project_id"]={key: None for key in ["uc", "tacc"]}
                         if self.core.get_attribute(node, "project_site")=="uc":
-                            if "uc" not in self.credentials_dict["chi"]["project_id"]:
+                            if self.credentials_dict["chi"]["project_id"]["uc"] is None:
                                 self.credentials_dict["chi"]["project_id"]["uc"]=self.core.get_attribute(node, "project_id")
+                                self.credentials_dict["chi"]["project_id"]["tacc"]= " "
                         elif self.core.get_attribute(node, "project_site")=="tacc":
-                            if "uc" not in self.credentials_dict["chi"]["project_id"]:
+                            if self.credentials_dict["chi"]["project_id"]["tacc"] is None:
                                 self.credentials_dict["chi"]["project_id"]["tacc"]=self.core.get_attribute(node, "project_id")
+                                self.credentials_dict["chi"]["project_id"]["uc"]=" "
+
 
                     elif attribute_name not in ["name", "project_site"]:
                         self.credentials_dict["chi"][f"{attribute_name}"]= self.core.get_attribute(node, attribute_name)

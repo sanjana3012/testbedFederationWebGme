@@ -2,6 +2,7 @@
 
 var config = require('./config.webgme'),
     validateConfig = require('webgme/config/validator');
+    const path = require('path');
 
 // Add/overwrite any additional settings here
 // config.server.port = 8080;
@@ -22,7 +23,7 @@ config.plugin.allowServerExecution = true;
 
 
 
-config.visualization.svgDirs = ['/Users/sanjanadas/testbedFederationWebGme/icons/png'];
+config.visualization.svgDirs = [path.join(__dirname, '../icons/png')];
 
 validateConfig(config);
 config.plugin.allowServerExecution = true
