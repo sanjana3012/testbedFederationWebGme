@@ -194,7 +194,7 @@ class createFabFile(PluginBase):
             self.resource_type_node = {'node': []}
             self.resource_type_node_initialized = False 
         if len(self.network_list)>0:
-            self.resource_type_network['network'].append(self.network_dict)
+            
                 
             self.experiment_config['resource'].append(self.resource_type_network)
             self.resource_type_network_initialized = False
@@ -257,32 +257,33 @@ class createFabFile(PluginBase):
         if not self.core.get_pointer_path(node, 'credential_file'):
             raise Exception(f"Credential file not attached to {self.core.get_attribute(node, 'name')}")
         
-        if not self.resource_type_network_initialized:
-                self.resource_type_network_initialized = True
-        
-        logger.info(f"HELOOOOOO INTERFACE {interface}")
-        if self.core.is_instance_of(node, self.META['FabricNetwork']):
-            # node_attributes = self.core.get_attribute_names(node)
-            if 'fabric_network' not in self.network_dict: #use self.network_dict
-                self.network_dict['fabric_network']={}
-                self.network_dict['fabric_network']['provider']="'{{fabric.fabric_provider}}'"
-                self.network_dict['fabric_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
-                if interface_required=="yes":
-                    self.network_dict['fabric_network']['interface']=interface
-                if stitch=="yes":
-                    self.network_dict['fabric_network']['stitch_with']= '{{ network.chi_network }}'
-               
-        
-        if self.core.is_instance_of(node,self.META['ChiNetwork']):
-                        
-            if 'chi_network' not in self.network_dict: #a dictionary containing all the attributes and values of the fabric network
+        else:
+            network_config={}
+            if not self.resource_type_network_initialized:
+                    self.resource_type_network_initialized = True
             
-                self.network_dict['chi_network']={}
-                self.network_dict['chi_network']['provider']="'{{chi.chi_provider}}'"
-                self.network_dict['chi_network']['layer3']=f"{{{{ layer3.{network_conn_name} }}}}"
-                site=self.core.get_attribute(node,"site")
-                self.network_dict['chi_network']['site']=f"{site}"
-               
+            if self.core.is_instance_of(node, self.META['FabricNetwork']):
+                network_config['fabric_network'] = {
+                    'provider': "'{{fabric.fabric_provider}}'",
+                    'layer3': f"{{{{ layer3.{network_conn_name} }}}}"
+                }
+                if interface_required == "yes":
+                    network_config['fabric_network']['interface'] = interface
+                if stitch == "yes":
+                    network_config['fabric_network']['stitch_with'] = '{{ network.chi_network }}'
+            
+            elif self.core.is_instance_of(node, self.META['ChiNetwork']):
+                network_config['chi_network'] = {
+                    'provider': "'{{chi.chi_provider}}'",
+                    'layer3': f"{{{{ layer3.{network_conn_name} }}}}",
+                    'site': self.core.get_attribute(node, "site")
+                }
+
+            # Append the network configuration as a new item to the network list
+            if network_config:
+                self.resource_type_network['network'].append(network_config)
+            
+                
               
         
         
