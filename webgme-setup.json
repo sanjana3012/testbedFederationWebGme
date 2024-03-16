@@ -20,6 +20,10 @@
       "createFabFile": {
         "src": "src/plugins/createFabFile",
         "test": "test/plugins/createFabFile"
+      },
+      "installFabfed": {
+        "src": "src/plugins/installFabfed",
+        "test": "test/plugins/installFabfed"
       }
     },
     "routers": {}
