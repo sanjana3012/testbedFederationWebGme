@@ -9,18 +9,6 @@
       }
     },
     "plugins": {
-      "fileGenerator": {
-        "src": "src/plugins/fileGenerator",
-        "test": "test/plugins/fileGenerator"
-      },
-      "fabFileGenerator": {
-        "src": "src/plugins/fabFileGenerator",
-        "test": "test/plugins/fabFileGenerator"
-      },
-      "workflowFileGenerator": {
-        "src": "src/plugins/workflowFileGenerator",
-        "test": "test/plugins/workflowFileGenerator"
-      },
       "newfil": {
         "src": "src/plugins/newfil",
         "test": "test/plugins/newfil"
