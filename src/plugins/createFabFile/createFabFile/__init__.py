@@ -6,6 +6,8 @@ import sys
 import logging
 from webgme_bindings import PluginBase
 import yaml
+import fabfed
+from fabfed.util.config import WorkflowConfig
 
 # Setup a logger
 logger = logging.getLogger('createFabFile')
@@ -41,7 +43,6 @@ class createFabFile(PluginBase):
         self.network_dict={}
         self.nodes = {}
         self.experiment_config={}
-        self.fab_file=" "
         self.node_list=[]
         self.network_list=[]
         self.stitch_network_connection_list=[]
@@ -53,9 +54,7 @@ class createFabFile(PluginBase):
 
         self.check_experiment_type()
         self.create_provider()
-
         self.create_fab_file()
-        # self.create_start_sh()
    
 
 
@@ -132,35 +131,30 @@ class createFabFile(PluginBase):
 
         if len(self.simple_network_connection_list)>0:
             if len(self.stitch_network_connection_list)>0:
-                logger.info("full stitch")
+                # logger.info("full stitch")
                 self.full_stitch()
                 
                 
             else:
-                logger.info("single provider")
+                # logger.info("single provider")
                 self.single_provider()
                
                 
         elif len(self.stitch_network_connection_list)>0:
                
-            logger.info("HELLOOOOO networks only")
+            # logger.info("networks only")
             self.networks_only()
             
             
                 
         else:
-            logger.info("simple node")
+            # logger.info("simple node")
             self.simple_node()
     
     def create_config(self,conn):
             self.experiment_config["config"]=[]
             config_type_layer3={}
             connection_dict={}
-            
-                #a dictionary containing a layer3 item (self.config_type_layer3["layer3"])
-                # nodes_in_stitch_connection=[]
-
-                
             network_conn_name=self.core.get_attribute(conn,'name')
             if self.core.is_connection(conn):
                 if "layer3" not in config_type_layer3:
@@ -204,18 +198,16 @@ class createFabFile(PluginBase):
           
 
     
-    def process_node(self,node,len_node_list=0,stitch="no"):
+    def process_node(self,node,stitch="no"):
     
         if not self.core.get_pointer_path(node,'credential_file'):
             raise Exception(f"Credential file not attached to {self.core.get_attribute(node,'name')}")
         else:
-            logger.info(f"NAME OF NODE AGHHH {self.core.get_attribute(node,'name')}")
-            self.count_of_nodes+=1
-            logger.info(f"COUNT OF NODES {self.count_of_nodes} AND NODE LIST LENGTH {len_node_list}")
             if not self.resource_type_node_initialized:
                 self.resource_type_node_initialized = True
             node_attributes = self.core.get_attribute_names(node)
-            logger.info(f"node attribute names are: {node_attributes}")
+    
+            # logger.info(f"node attribute names are: {node_attributes}")
             node_dict={}
             node_name=self.core.get_attribute(node,"name")
             
@@ -285,21 +277,13 @@ class createFabFile(PluginBase):
             
                 
               
-        
-        
-
-
-            
-        
-    def process_simple_network_connection(self,network_conn_name,len_node_list=0,stitch="no"):
+    def process_simple_network_connection(self,network_conn_name,stitch="no"):
 
         
         interface_required="no"
         interface=[]
         Flag=True
 
-        # if stitch=="no":
-        #     self.create_config(self.simple_network_connection_list)
         
         if len(self.node_list)>0: 
             for conn in self.simple_network_connection_list:
@@ -325,12 +309,6 @@ class createFabFile(PluginBase):
                             
                     if stitch=="no" and len(self.network_list)==1:
                         self.create_config(conn)
-
-
-                    # for node in nodes_in_simple_connection:
-                    #     if self.core.is_instance_of(node, self.META['Node']):
-
-                    #         logger.info(f"NAME OF NODE INSIDE THE PROCESS SIMPLE FUNCTIONAGHHH {self.core.get_attribute(node,'name')}")
                             
                     if self.core.is_instance_of(destination_node, self.META['FabricNode']):
                         interface_required="yes"
@@ -382,25 +360,25 @@ class createFabFile(PluginBase):
         for conn in self.stitch_network_connection_list:
 
             source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-            logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
+            # logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
 
             source_node_name=self.core.get_attribute(source_node,"name")
             nodes_in_stitch_connection.append(source_node)
 
             
             destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-            logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
+            # logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
         
 
             destination_node_name=self.core.get_attribute(destination_node,"name")
             nodes_in_stitch_connection.append(destination_node)
 
             if not self.check_has_node_been_processed_before(source_node):
-                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
+                        # logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
                         self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
             
             if not self.check_has_node_been_processed_before(destination_node):
-                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(destination_node,'name')}")
+                        # logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(destination_node,'name')}")
                         self.process_network(destination_node,InlineList(interface),network_conn_name,interface_required,stitch)
             
 
@@ -416,7 +394,7 @@ class createFabFile(PluginBase):
         for conn in self.stitch_network_connection_list:
             network_conn_name=self.core.get_attribute(conn,"name")
             self.create_config(conn)
-        self.process_simple_network_connection(network_conn_name,len(self.node_list),stitch="yes")
+        self.process_simple_network_connection(network_conn_name,stitch="yes")
         self.process_stitch_connection(network_conn_name,stitch="yes")
         self.finalize_resource_configuration()
 
@@ -424,12 +402,12 @@ class createFabFile(PluginBase):
         
         for conn in self.simple_network_connection_list:
             network_conn_name=self.core.get_attribute(conn,"name")
-        self.process_simple_network_connection(network_conn_name,len(self.node_list),stitch="no")
+        self.process_simple_network_connection(network_conn_name,stitch="no")
         self.finalize_resource_configuration()
 
     def simple_node(self):
         for node in self.node_list:
-            self.process_node(node,len(self.node_list),stitch="no")
+            self.process_node(node,stitch="no")
             self.finalize_resource_configuration()
 
     def networks_only(self):
@@ -442,10 +420,25 @@ class createFabFile(PluginBase):
 
     def create_fab_file(self):
         yaml_string = yaml.dump(self.experiment_config, default_flow_style=False)
-        self.fab_file=yaml_string.replace("'''","'")
-        self.add_file(f"{self.core.get_attribute(self.active_node,'name')}.fab", self.fab_file)           
+        fab_file=yaml_string.replace("'''","'")
+        self.add_file(f"{self.core.get_attribute(self.active_node,'name')}.fab", fab_file)           
         commit_info = self.util.save(self.root_node, self.commit_hash, 'master', 'Python plugin updated the model')
         logger.info('committed :{0}'.format(commit_info))
+
+    
+
+    # def validate(self):
+    #     try:
+    #         config = WorkflowConfig.parse()
+    #         # print("Validation ok")
+    #         return config
+    #     except Exception as e:
+    #         print(f"Validation failed:{e}")
+    #         return None
+        
+    # session = "validation"
+    # config_dir = ""
+    
 
 
    
