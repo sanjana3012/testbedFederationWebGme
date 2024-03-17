@@ -13,16 +13,18 @@ First, you need to install the following for the Webgme project to work:
 - MongoDB. Pull the mongodb image in docker desktop and make a new container fro.
   - Steps to create a new container from the image:
     - Click the run button beside the mongo image and set the optional settings
-
-Give a name to your container. I gave it sanjanadb.
-Set host path as :
-
-```
+    - Give a name to your container. I gave it sanjanadb.
+    - Set host path as :
+    - ```
 /Users/yourname/DB
 ```
+
 Where DB is a folder I created to store all the database contents.
-​Set the Container path as
+    - ​Set the Container path as
 ```
 /data/db
 ```
+
+
+
 # testbedFederationWebGme
