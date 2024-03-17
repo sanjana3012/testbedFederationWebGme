@@ -47,6 +47,8 @@ class createFabFile(PluginBase):
         self.network_list=[]
         self.stitch_network_connection_list=[]
         self.simple_network_connection_list=[]
+        self.fabric_credential=False
+        self.chi_credential=False
         
 
         self.load_nodes()
@@ -112,21 +114,53 @@ class createFabFile(PluginBase):
 
         for path in self.nodes:
             node = self.nodes[path]
+
+            if(self.core.is_instance_of(node,self.META['chi_credentials'])):
+                self.chi_credential=True
+                logger.info("chi cred PRESENT")
+            if (self.core.is_instance_of(node,self.META['fabric_credentials'])):
+
+                self.fabric_credential=True
+                logger.info("FAB CRED PRESENT")
+        for path in self.nodes:
+            node = self.nodes[path]
+            
             if (self.core.is_instance_of(node, self.META['Node']) ):
                 # logger.info(f"Nodes present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.node_list.append(node)
+                if self.core.is_instance_of(node, self.META['FabricNode']):
+                    if self.fabric_credential==False:
+                        raise Exception ("No fabric credential associated with experiment")
+
+                elif self.core.is_instance_of(node, self.META['ChiNode']):
+                    if self.chi_credential==False:
+                        raise Exception ("No chi credential associated with experiment")
+                    
                 
             if self.core.is_instance_of(node, self.META['Network']):
                 # logger.info(f"Networks present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.network_list.append(node)
+                                
+                if self.core.is_instance_of(node, self.META['FabricNetwork']):
+                    if self.fabric_credential==False:
+                        raise Exception ("No fabric credential associated with experiment")
+
+                elif self.core.is_instance_of(node, self.META['ChiNetwork']):
+                    if self.chi_credential==False:
+                        raise Exception ("No chi credential associated with experiment")
             
             if(self.core.is_instance_of(node,self.META['StitchConnection'])):
                 # logger.info(f"Stitch Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.stitch_network_connection_list.append(node)
+            
+
+
+
 
             elif(self.core.is_instance_of(node,self.META['SimpleNetworkConnection'])):
                 # logger.info(f"Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.simple_network_connection_list.append(node)
+
 
 
         if len(self.simple_network_connection_list)>0:
@@ -199,10 +233,13 @@ class createFabFile(PluginBase):
 
     
     def process_node(self,node,stitch="no"):
-    
-        if not self.core.get_pointer_path(node,'credential_file'):
-            raise Exception(f"Credential file not attached to {self.core.get_attribute(node,'name')}")
-        else:
+        
+        # if self.fabric_credential==False or self.chi_credential==False:
+        #     false_vars = [var_name for var_name, value in (('Fabric', self.fabric_credential), ('Chi', self.chi_credential)) if not value]
+        #     for provider in false_vars:
+        #         raise Exception(f"{provider} credential not associated with the experiment!!")
+            
+        # else:
             if not self.resource_type_node_initialized:
                 self.resource_type_node_initialized = True
             node_attributes = self.core.get_attribute_names(node)
@@ -246,10 +283,12 @@ class createFabFile(PluginBase):
 
     def process_network(self,node,interface,network_conn_name,interface_required="yes",stitch="no"):
         
-        if not self.core.get_pointer_path(node, 'credential_file'):
-            raise Exception(f"Credential file not attached to {self.core.get_attribute(node, 'name')}")
+        # if self.fabric_credential==False or self.chi_credential==False:
+        #     false_vars = [var_name for var_name, value in (('Fabric', self.fabric_credential), ('Chi', self.chi_credential)) if not value]
+        #     for provider in false_vars:
+        #         raise Exception(f"{provider} credential not associated with the experiment!!")
         
-        else:
+        # else:
             network_config={}
             if not self.resource_type_network_initialized:
                     self.resource_type_network_initialized = True
@@ -287,19 +326,20 @@ class createFabFile(PluginBase):
         
         if len(self.node_list)>0: 
             for conn in self.simple_network_connection_list:
+                
                 nodes_in_simple_connection=[]
                 if stitch=="no":
                     network_conn_name=self.core.get_attribute(conn,'name')
-                logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
+                #logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
                 source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-                logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
+                #logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
 
                 source_node_name=self.core.get_attribute(source_node,"name")
                 nodes_in_simple_connection.append(source_node)
 
                 
                 destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-                logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
+                #logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
             
 
                 destination_node_name=self.core.get_attribute(destination_node,"name")
@@ -315,22 +355,22 @@ class createFabFile(PluginBase):
                             
                         node_name=self.core.get_attribute(destination_node,"name")
                         interface.append(f"{{{{ node.{node_name} }}}}")
-                    self.process_node(destination_node,len_node_list,stitch)
+                    self.process_node(destination_node,stitch)
                 
         for conn in self.simple_network_connection_list:
             nodes_in_simple_connection=[]
             if stitch=="no":
                 network_conn_name=self.core.get_attribute(conn,'name')
-            logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
+            #logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
             source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-            logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
+            #logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
 
             source_node_name=self.core.get_attribute(source_node,"name")
             nodes_in_simple_connection.append(source_node)
 
             
             destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-            logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
+            #logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
         
 
             destination_node_name=self.core.get_attribute(destination_node,"name")
