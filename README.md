@@ -1,10 +1,28 @@
 # fabfed_project
 ## Installation
-First, install the fabfed_project following:
+### Prerequisites
+First, you need to install the following for the Webgme project to work:
+- git using homebrew
+  ```
+  brew install git
+
+  ```
 - [NodeJS](https://nodejs.org/en/) (LTS recommended)
-- [MongoDB](https://www.mongodb.com/)
+- [Python](https://www.python.org/)
+- [Docker desktop](https://www.docker.com/products/docker-desktop/)
+- MongoDB. Pull the mongodb image in docker desktop and make a new container fro.
+  - Steps to create a new container from the image:
+    - Click the run button beside the mongo image and set the optional settings
 
-Second, start mongodb locally by running the `mongod` executable in your mongodb installation (you may need to create a `data` directory or set `--dbpath`).
+Give a name to your container. I gave it sanjanadb.
+Set host path as :
 
-Then, run `webgme start` from the project root to start . Finally, navigate to `http://localhost:8888` to start using fabfed_project!
+```
+/Users/yourname/DB
+```
+Where DB is a folder I created to store all the database contents.
+​Set the Container path as
+```
+/data/db
+```
 # testbedFederationWebGme
