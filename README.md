@@ -1,7 +1,7 @@
 # Testbed Federation using WebGME
 ## Installation
 ### Prerequisites
-First, you need to install the following for the Webgme project to work:
+First, you need to install the following for the tool to work:
 - git using homebrew
   ```
   brew install git
@@ -27,7 +27,7 @@ First, you need to install the following for the Webgme project to work:
       ```
 ## Dependencies and deployment
 Once you have all the preqreuisities, we can get to the fun part!
-- To run my project, first clone it using :
+- To run my tool, first clone it using :
 
 ```
 git clone https://github.com/sanjana3012/mic_mini_project.git
@@ -51,5 +51,15 @@ npm i webgme-bindings
 ```
 node app.js
 ```
-    
+or
+```
+webgme start
+```
+- copy http://127.0.0.1:8888 to your browser
+- Tada!! You are looking at my testbed federation tool now.
+## Make a new project
+- To make a new project click on create new on the first dialogue box that pops up and give it a name.
+- In the "choose existing seed" dropdown list choose the fabfed seed.
+- Click on create.
+
 
