@@ -16,8 +16,9 @@ First, you need to install the following for the Webgme project to work:
     - Give a name to your container. I gave it sanjanadb.
     - Set host path as :
       ```
-/Users/yourname/DB
-```
+      /Users/yourname/DB
+
+      ```
       Where DB is a folder I created to store all the database contents.
 
     - ​Set the Container path as
