@@ -1,14 +1,29 @@
 {
   "components": {
     "seeds": {
-      "fabric_Seed": {
-        "src": "src/seeds/fabric_Seed"
+      "fine_tune_seed_1": {
+        "src": "src/seeds/fine_tune_seed_1"
+      },
+      "fabfed": {
+        "src": "src/seeds/fabfed"
       }
     },
     "plugins": {
-      "fileGenerator": {
-        "src": "src/plugins/fileGenerator",
-        "test": "test/plugins/fileGenerator"
+      "newfil": {
+        "src": "src/plugins/newfil",
+        "test": "test/plugins/newfil"
+      },
+      "createCredentialFile": {
+        "src": "src/plugins/createCredentialFile",
+        "test": "test/plugins/createCredentialFile"
+      },
+      "createFabFile": {
+        "src": "src/plugins/createFabFile",
+        "test": "test/plugins/createFabFile"
+      },
+      "installFabfed": {
+        "src": "src/plugins/installFabfed",
+        "test": "test/plugins/installFabfed"
       }
     },
     "routers": {}

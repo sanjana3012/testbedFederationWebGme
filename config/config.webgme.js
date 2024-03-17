@@ -8,7 +8,8 @@ var config = require('webgme/config/config.default'),
 
 // The paths can be loaded from the webgme-setup.json
 config.plugin.basePaths.push(__dirname + '/../src/plugins');
-config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabric_Seed');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fine_tune_seed_1');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabfed');
 
 
 
