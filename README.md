@@ -30,7 +30,7 @@ Once you have all the preqreuisities, we can get to the fun part!
 - To run my tool, first clone it using :
 
 ```
-git clone https://github.com/sanjana3012/mic_mini_project.git
+git clone git@github.com:sanjana3012/testbedFederationWebGme.git
 
 ```
 - Install webgme and webgme cli (you may need to use --force at the end of these commands):
