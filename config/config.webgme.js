@@ -10,6 +10,7 @@ var config = require('webgme/config/config.default'),
 config.plugin.basePaths.push(__dirname + '/../src/plugins');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fine_tune_seed_1');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabfed');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabfed_new');
 
 
 

@@ -6,6 +6,9 @@
       },
       "fabfed": {
         "src": "src/seeds/fabfed"
+      },
+      "fabfed_new": {
+        "src": "src/seeds/fabfed_new"
       }
     },
     "plugins": {
