@@ -6,8 +6,7 @@ import sys
 import logging
 from webgme_bindings import PluginBase
 import yaml
-import fabfed
-from fabfed.util.config import WorkflowConfig
+
 
 # Setup a logger
 logger = logging.getLogger('createFabFile')
@@ -37,8 +36,8 @@ class createFabFile(PluginBase):
         self.resource_type_node = {'node': []}
         self.resource_type_network_initialized = False
         self.resource_type_network = {'network': []}
-        self.fabric_networks_with_multiple_nodes=[]
-        self.chi_networks_with_multiple_nodes=[]
+        # self.fabric_networks_with_multiple_nodes=[]
+        # self.chi_networks_with_multiple_nodes=[]
         self.network_nodes_list=[]
         self.network_dict={}
         self.nodes = {}
@@ -72,40 +71,8 @@ class createFabFile(PluginBase):
         # for n in self.nodes:     
         #     logger.info("Location : {0} : Name of the node : {1}".format(n, self.core.get_attribute(self.nodes[n], "name")))
     
-    def create_provider(self):
-        self.experiment_config['provider']=[]
-        provider_type_chi={} #sub dictionary inside providers
-        provider_type_fabric={}
-        for path in self.nodes:
-            node = self.nodes[path]
-            if (self.core.is_instance_of(node, self.META['FabricNode']) or self.core.is_instance_of(node, self.META['FabricNetwork'])):
-                if "fabric" not in provider_type_fabric:
-                    provider_type_fabric["fabric"]=[]
-                    fabric_provider_dict={"fabric_provider":{}}
-                    fabric_provider_dict['fabric_provider']["credential_file"]="~/.fabfed/fabfed_credentials.yml"
-                    fabric_provider_dict['fabric_provider']["profile"]="fabric"
-                    provider_type_fabric["fabric"].append(fabric_provider_dict)
-                    self.experiment_config['provider'].append(provider_type_fabric)
-                
-            
-            if (self.core.is_instance_of(node, self.META['ChiNode']) or self.core.is_instance_of(node, self.META['ChiNetwork'])):
-                if "chi" not in provider_type_chi: 
-                    provider_type_chi["chi"]=[]
-                    chi_provider_dict={"chi_provider":{}}
-                    chi_provider_dict['chi_provider']["credential_file"]="~/.fabfed/fabfed_credentials.yml"
-                    chi_provider_dict['chi_provider']["profile"]="chi"
-                    provider_type_chi["chi"].append(chi_provider_dict)
-                    self.experiment_config['provider'].append(provider_type_chi)
-
-    def check_has_node_been_processed_before(self,node):
-
-        if node not in self.network_nodes_list:
-            self.network_nodes_list.append(node)
-            return False
-        else:
-            return True
-
-
+   
+    
     def check_experiment_type(self):
 
         
@@ -115,13 +82,14 @@ class createFabFile(PluginBase):
         for path in self.nodes:
             node = self.nodes[path]
 
-            if(self.core.is_instance_of(node,self.META['chi_credentials'])):
+            if(self.core.is_instance_of(node,self.META['ChiCredentials'])):
                 self.chi_credential=True
-                logger.info("chi cred PRESENT")
-            if (self.core.is_instance_of(node,self.META['fabric_credentials'])):
+                # logger.info("chi cred PRESENT")
+            if (self.core.is_instance_of(node,self.META['FabricCredentials'])):
 
                 self.fabric_credential=True
-                logger.info("FAB CRED PRESENT")
+                # logger.info("FAB CRED PRESENT")
+
         for path in self.nodes:
             node = self.nodes[path]
             
@@ -153,14 +121,9 @@ class createFabFile(PluginBase):
                 # logger.info(f"Stitch Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.stitch_network_connection_list.append(node)
             
-
-
-
-
             elif(self.core.is_instance_of(node,self.META['SimpleNetworkConnection'])):
                 # logger.info(f"Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.simple_network_connection_list.append(node)
-
 
 
         if len(self.simple_network_connection_list)>0:
@@ -184,6 +147,40 @@ class createFabFile(PluginBase):
         else:
             # logger.info("simple node")
             self.simple_node()
+
+
+    def check_has_node_been_processed_before(self,node):
+
+        if node not in self.network_nodes_list:
+            self.network_nodes_list.append(node)
+            return False
+        else:
+            return True
+    
+    def create_provider(self):
+        self.experiment_config['provider']=[]
+        provider_type_chi={} #sub dictionary inside providers
+        provider_type_fabric={}
+        for path in self.nodes:
+            node = self.nodes[path]
+            if (self.core.is_instance_of(node, self.META['FabricNode']) or self.core.is_instance_of(node, self.META['FabricNetwork'])):
+                if "fabric" not in provider_type_fabric:
+                    provider_type_fabric["fabric"]=[]
+                    fabric_provider_dict={"fabric_provider":{}}
+                    fabric_provider_dict['fabric_provider']["credential_file"]="~/.fabfed/fabfed_credentials.yml"
+                    fabric_provider_dict['fabric_provider']["profile"]="fabric"
+                    provider_type_fabric["fabric"].append(fabric_provider_dict)
+                    self.experiment_config['provider'].append(provider_type_fabric)
+                
+            
+            if (self.core.is_instance_of(node, self.META['ChiNode']) or self.core.is_instance_of(node, self.META['ChiNetwork'])):
+                if "chi" not in provider_type_chi: 
+                    provider_type_chi["chi"]=[]
+                    chi_provider_dict={"chi_provider":{}}
+                    chi_provider_dict['chi_provider']["credential_file"]="~/.fabfed/fabfed_credentials.yml"
+                    chi_provider_dict['chi_provider']["profile"]="chi"
+                    provider_type_chi["chi"].append(chi_provider_dict)
+                    self.experiment_config['provider'].append(provider_type_chi)
     
     def create_config(self,conn):
             self.experiment_config["config"]=[]
@@ -420,13 +417,7 @@ class createFabFile(PluginBase):
             if not self.check_has_node_been_processed_before(destination_node):
                         # logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(destination_node,'name')}")
                         self.process_network(destination_node,InlineList(interface),network_conn_name,interface_required,stitch)
-            
-
-
-
-    
-        
-            
+               
         
     def full_stitch(self):
 
