@@ -440,8 +440,8 @@ class createFabFile(PluginBase):
         file_path = os.path.join(directory_path, f"{self.core.get_attribute(self.active_node,'name')}.fab")
         
         # Write the content to the file
-        # with open(file_path, 'w') as file:
-        #     file.write(fab_file)    
+        with open(file_path, 'w') as file:
+            file.write(fab_file)    
         commit_info = self.util.save(self.root_node, self.commit_hash, 'master', 'Python plugin updated the model')
         logger.info('committed :{0}'.format(commit_info))
 

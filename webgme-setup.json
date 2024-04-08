@@ -27,6 +27,10 @@
       "installFabfed": {
         "src": "src/plugins/installFabfed",
         "test": "test/plugins/installFabfed"
+      },
+      "validateFile": {
+        "src": "src/plugins/validateFile",
+        "test": "test/plugins/validateFile"
       }
     },
     "routers": {}
