@@ -6,6 +6,7 @@ import sys
 import logging
 from webgme_bindings import PluginBase
 import yaml
+import os
 
 
 # Setup a logger
@@ -220,7 +221,7 @@ class createFabFile(PluginBase):
             self.resource_type_node_initialized = False 
         if len(self.network_list)>0:
             
-                
+            self.resource_type_network['network'].append(self.network_dict)    
             self.experiment_config['resource'].append(self.resource_type_network)
             self.resource_type_network_initialized = False
             self.resource_type_network = {'network': []}
@@ -261,24 +262,32 @@ class createFabFile(PluginBase):
                 elif attribute_name=="nic_model":
                     node_nic_model= self.core.get_attribute(node,attribute_name)
                     node_dict[f"{node_name}"]["nic_model"]=node_nic_model
+                
 
                 elif attribute_name=="network":
-                    if stitch=="yes":
-                        node_dict[f"{node_name}"]["network"]="'{{ network.chi_network }}'"
-                    else:
-                        node_network=self.core.get_attribute(node,attribute_name)
-                        node_dict[f"{node_name}"]["network"]=node_network          
+                    
+                    node_network=self.core.get_attribute(node,attribute_name)
+                    node_dict[f"{node_name}"]["network"]=node_network          
             
             if self.core.is_instance_of(node, self.META['FabricNode']):
                 node_dict[f"{node_name}"]['provider'] = "'{{fabric.fabric_provider}}'"
+
+                if stitch=="yes" or len(self.simple_network_connection_list)>0:
+                    
+                    node_dict[f"{node_name}"]["network"]="'{{ network.fabric_network }}'"
             
             if self.core.is_instance_of(node, self.META['ChiNode']):
                 node_dict[f"{node_name}"]['provider'] = "'{{chi.chi_provider}}'"
 
+                if stitch=="yes" or len(self.simple_network_connection_list)>0:
+                    
+                    node_dict[f"{node_name}"]["network"]="'{{ network.chi_network }}'"
+            
+
             self.resource_type_node['node'].append(node_dict)
 
 
-    def process_network(self,node,interface,network_conn_name,interface_required="yes",stitch="no"):
+    def process_network(self,node,network_conn_name,stitch="no"):
         
         # if self.fabric_credential==False or self.chi_credential==False:
         #     false_vars = [var_name for var_name, value in (('Fabric', self.fabric_credential), ('Chi', self.chi_credential)) if not value]
@@ -286,78 +295,43 @@ class createFabFile(PluginBase):
         #         raise Exception(f"{provider} credential not associated with the experiment!!")
         
         # else:
-            network_config={}
+            # self.network_dict={}
             if not self.resource_type_network_initialized:
                     self.resource_type_network_initialized = True
             
             if self.core.is_instance_of(node, self.META['FabricNetwork']):
-                network_config['fabric_network'] = {
-                    'provider': "'{{fabric.fabric_provider}}'",
-                    'layer3': f"{{{{ layer3.{network_conn_name} }}}}"
-                }
-                if interface_required == "yes":
-                    network_config['fabric_network']['interface'] = interface
-                if stitch == "yes":
-                    network_config['fabric_network']['stitch_with'] = '{{ network.chi_network }}'
+
+                if 'fabric_network' not in self.network_dict:
+                    self.network_dict['fabric_network'] = {
+                        'provider': "'{{fabric.fabric_provider}}'",
+                        'layer3': f"{{{{ layer3.{network_conn_name} }}}}"
+                    }
+
+                    if stitch == "yes":
+                        self.network_dict['fabric_network']['stitch_with'] = '{{ network.chi_network }}'
+                    
             
             elif self.core.is_instance_of(node, self.META['ChiNetwork']):
-                network_config['chi_network'] = {
-                    'provider': "'{{chi.chi_provider}}'",
-                    'layer3': f"{{{{ layer3.{network_conn_name} }}}}",
-                    'site': self.core.get_attribute(node, "site")
-                }
+                if 'chi_network' not in self.network_dict:
+                    self.network_dict['chi_network'] = {
+                        'provider': "'{{chi.chi_provider}}'",
+                        'layer3': f"{{{{ layer3.{network_conn_name} }}}}",
+                        'site': self.core.get_attribute(node, "site")
+                    }
+                    
 
             # Append the network configuration as a new item to the network list
-            if network_config:
-                self.resource_type_network['network'].append(network_config)
+          
             
                 
               
     def process_simple_network_connection(self,network_conn_name,stitch="no"):
 
-        
-        interface_required="no"
-        interface=[]
-        Flag=True
-
-        
-        if len(self.node_list)>0: 
-            for conn in self.simple_network_connection_list:
-                
-                nodes_in_simple_connection=[]
-                if stitch=="no":
-                    network_conn_name=self.core.get_attribute(conn,'name')
-                #logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
-                source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
-                #logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
-
-                source_node_name=self.core.get_attribute(source_node,"name")
-                nodes_in_simple_connection.append(source_node)
-
-                
-                destination_node=self.nodes[self.core.get_pointer_path(conn,'dst')]
-                #logger.info(f"Destination node is {self.core.get_attribute(destination_node,'name')}")
-            
-
-                destination_node_name=self.core.get_attribute(destination_node,"name")
-                nodes_in_simple_connection.append(destination_node)
-
-                if self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Node']):
-                            
-                    if stitch=="no" and len(self.network_list)==1:
-                        self.create_config(conn)
-                            
-                    if self.core.is_instance_of(destination_node, self.META['FabricNode']):
-                        interface_required="yes"
-                            
-                        node_name=self.core.get_attribute(destination_node,"name")
-                        interface.append(f"{{{{ node.{node_name} }}}}")
-                    self.process_node(destination_node,stitch)
-                
         for conn in self.simple_network_connection_list:
+            
             nodes_in_simple_connection=[]
-            if stitch=="no":
-                network_conn_name=self.core.get_attribute(conn,'name')
+            
+                
             #logger.info(f"NAME OF CONN AGHHH {self.core.get_attribute(conn,'name')}")
             source_node=self.nodes[self.core.get_pointer_path(conn,'src')]
             #logger.info(f"Source node is {self.core.get_attribute(source_node,'name')}")
@@ -374,24 +348,26 @@ class createFabFile(PluginBase):
             nodes_in_simple_connection.append(destination_node)
 
             if self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Node']):
-                
-                if self.core.is_instance_of(source_node, self.META['FabricNetwork']):
+                        
+                if stitch=="no" and len(self.network_list)==1:
+                    self.create_config(conn)
                     
-                    if not self.check_has_node_been_processed_before(source_node):
-                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
-                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
+                self.process_node(destination_node,stitch)
+                if not self.check_has_node_been_processed_before(source_node):
+                    self.process_network(source_node,network_conn_name,stitch)
+                
+                
 
             elif self.core.is_instance_of(source_node, self.META['Network']) and self.core.is_instance_of(destination_node,self.META['Network']):
+                network_conn_name=self.core.get_attribute(conn,'name')
                 if stitch=="no":
                     self.create_config(conn)
                 if not self.check_has_node_been_processed_before(source_node):
-                        logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
-                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
+                        self.process_network(source_node,network_conn_name,stitch)
 
 
     def process_stitch_connection(self,network_conn_name,stitch="yes"):
-        interface=[]
-        interface_required="no"
+        
         nodes_in_stitch_connection=[]
 
         for conn in self.stitch_network_connection_list:
@@ -412,11 +388,11 @@ class createFabFile(PluginBase):
 
             if not self.check_has_node_been_processed_before(source_node):
                         # logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(source_node,'name')}")
-                        self.process_network(source_node,InlineList(interface),network_conn_name,interface_required,stitch)
+                        self.process_network(source_node,network_conn_name,stitch)
             
             if not self.check_has_node_been_processed_before(destination_node):
                         # logger.info(f"UNIQUE NETWORK IN TOPO {self.core.get_attribute(destination_node,'name')}")
-                        self.process_network(destination_node,InlineList(interface),network_conn_name,interface_required,stitch)
+                        self.process_network(destination_node,network_conn_name,stitch)
                
         
     def full_stitch(self):
@@ -452,7 +428,20 @@ class createFabFile(PluginBase):
     def create_fab_file(self):
         yaml_string = yaml.dump(self.experiment_config, default_flow_style=False)
         fab_file=yaml_string.replace("'''","'")
-        self.add_file(f"{self.core.get_attribute(self.active_node,'name')}.fab", fab_file)           
+        self.add_file(f"{self.core.get_attribute(self.active_node,'name')}.fab", fab_file)       
+        
+        
+        # Define the path where you want to save the file
+        # You might need to change 'my_fab_files' to the correct path where you want to save
+        directory_path = os.path.expanduser('~/testbedFederationWebGme/fabfed/examples')
+        # Ensure the directory exists
+        os.makedirs(directory_path, exist_ok=True)
+        # Define the full path for the new file
+        file_path = os.path.join(directory_path, f"{self.core.get_attribute(self.active_node,'name')}.fab")
+        
+        # Write the content to the file
+        # with open(file_path, 'w') as file:
+        #     file.write(fab_file)    
         commit_info = self.util.save(self.root_node, self.commit_hash, 'master', 'Python plugin updated the model')
         logger.info('committed :{0}'.format(commit_info))
 
