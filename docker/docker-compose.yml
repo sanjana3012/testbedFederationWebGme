@@ -1,16 +1,21 @@
-version: "3"
+version: "3.7"
 services:
   fabfed-webgme:
     restart: always
     image: fabfed-webgme:v1
-    network_mode: host
-    # Comment out the next line if you don't want to seed the database with the test seed
-    command: npm start
+    ports:
+      - "8888:8888"
     depends_on:
-        - mongo
+      - mongo
+    pull_policy: never
 
   mongo:
     restart: always
     image: mongo:latest
     ports:
-        - "27017:27017"
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

@@ -1,14 +1,8 @@
 {
   "components": {
     "seeds": {
-      "fine_tune_seed_1": {
-        "src": "src/seeds/fine_tune_seed_1"
-      },
-      "fabfed": {
-        "src": "src/seeds/fabfed"
-      },
-      "fabfed_new": {
-        "src": "src/seeds/fabfed_new"
+      "fabfed_seed_v1": {
+        "src": "src/seeds/fabfed_seed_v1"
       }
     },
     "plugins": {
