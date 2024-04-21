@@ -3,6 +3,9 @@
     "seeds": {
       "fabfed_seed_v1": {
         "src": "src/seeds/fabfed_seed_v1"
+      },
+      "fabfed_seed_v2": {
+        "src": "src/seeds/fabfed_seed_v2"
       }
     },
     "plugins": {

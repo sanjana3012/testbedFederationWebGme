@@ -9,6 +9,7 @@ var config = require('webgme/config/config.default'),
 // The paths can be loaded from the webgme-setup.json
 config.plugin.basePaths.push(__dirname + '/../src/plugins');
 config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabfed_seed_v1');
+config.seedProjects.basePaths.push(__dirname + '/../src/seeds/fabfed_seed_v2');
 
 
 
@@ -30,7 +31,6 @@ config.requirejsPaths = {
 };
 
 
-config.mongo.uri = 'mongodb://mongo:27017/fabfed_project';
-//config.mongo.uri = 'mongodb://127.0.0.1:27017/fabfed_project';
+config.mongo.uri = 'mongodb://127.0.0.1:27017/fabfed_project';
 validateConfig(config);
 module.exports = config;
