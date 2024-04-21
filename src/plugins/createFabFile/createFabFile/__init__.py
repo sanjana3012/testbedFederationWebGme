@@ -42,6 +42,7 @@ class createFabFile(PluginBase):
         self.network_nodes_list=[]
         self.network_dict={}
         self.nodes = {}
+        self.parent_nodes={}
         self.experiment_config={}
         self.node_list=[]
         self.network_list=[]
@@ -49,14 +50,16 @@ class createFabFile(PluginBase):
         self.simple_network_connection_list=[]
         self.fabric_credential=False
         self.chi_credential=False
+        self.credentials=[]
+        parent=self.core.get_parent(self.active_node)
         
 
         self.load_nodes()
         
-
-        self.check_experiment_type()
-        self.create_provider()
-        self.create_fab_file()
+        self.check_credential_present(parent)
+        self.check_experiment_type(parent)
+        # self.create_provider()
+        # self.create_fab_file()
    
 
 
@@ -72,44 +75,73 @@ class createFabFile(PluginBase):
         # for n in self.nodes:     
         #     logger.info("Location : {0} : Name of the node : {1}".format(n, self.core.get_attribute(self.nodes[n], "name")))
     
-   
-    
-    def check_experiment_type(self):
+    def check_credential_present(self,parent):
 
+        nodes_list = self.core.load_sub_tree(parent)        
+        for node in nodes_list:
+            self.parent_nodes[self.core.get_path(node)] = node
         
-        simple_fabric_connection_list=[]
-        simple_chi_connection_list=[]
+        for path in self.parent_nodes:
+            node = self.parent_nodes[path]
+            
+            if(self.core.is_instance_of(node,self.META['credentials'])):
+                self.credentials.append(node)
+
+        for conn in self.credentials:
+             source_node=self.parent_nodes[self.core.get_pointer_path(conn,'src')]
+             if source_node==self.active_node:
+                logger.info(f"Source node aka current topology is: {self.core.get_attribute(source_node,'name')}")
+                destination_node=self.parent_nodes[self.core.get_pointer_path(conn,'dst')]
+                if(self.core.is_instance_of(destination_node,self.META['ChiCredentials'])):
+                    self.chi_credential=True
+                    logger.info(f" Chi credential attached : {self.core.get_attribute(destination_node,'name')}")
+                    chi_credential_node=destination_node
+                    # logger.info("chi cred PRESENT")
+                if (self.core.is_instance_of(destination_node,self.META['FabricCredentials'])):
+                    fabric_credential_node=destination_node
+                    logger.info(f" Fabric credential attached : {self.core.get_attribute(destination_node,'name')}")
+
+                    self.fabric_credential=True
         
+        return chi_credential_node,fabric_credential_node
+                 
 
-        for path in self.nodes:
-            node = self.nodes[path]
+    def check_experiment_type(self,parent):
 
-            if(self.core.is_instance_of(node,self.META['ChiCredentials'])):
-                self.chi_credential=True
-                chi_credential_node=node
-                # logger.info("chi cred PRESENT")
-            if (self.core.is_instance_of(node,self.META['FabricCredentials'])):
-                fabric_credential_node=node
+        chi_credential_node,fabric_credential_node=self.check_credential_present(parent)
+       
+        # for path in self.nodes:
+        #     node = self.nodes[path]
 
-                self.fabric_credential=True
+        #     if(self.core.is_instance_of(node,self.META['ChiCredentials'])):
+        #         self.chi_credential=True
+        #         chi_credential_node=node
+        #         # logger.info("chi cred PRESENT")
+        #     if (self.core.is_instance_of(node,self.META['FabricCredentials'])):
+        #         fabric_credential_node=node
+
+        #         self.fabric_credential=True
                 # logger.info("FAB CRED PRESENT")
 
         for path in self.nodes:
             node = self.nodes[path]
+            
             
             if (self.core.is_instance_of(node, self.META['Node']) ):
                 # logger.info(f"Nodes present in the experiment: {self.core.get_attribute(node, 'name')}")
                 self.node_list.append(node)
                 if self.core.is_instance_of(node, self.META['FabricNode']):
                     fabric_credential_attribute_values=[]
+
                     if self.fabric_credential==False:
                         raise Exception ("No fabric credential associated with experiment")
-                    elif self.fabric_credential==True:
-                        node_attributes = self.core.get_attribute_names(fabric_credential_node)
-                        for attribute_name in node_attributes:
-                            fabric_credential_attribute_values.append(self.core.get_attribute(fabric_credential_node,attribute_name))
-                        if None in fabric_credential_attribute_values or '' in fabric_credential_attribute_values:
-                            raise Exception ("Missing value in Fabric credential file")
+                    # elif self.fabric_credential==True:
+                    #     node_attributes = self.core.get_attribute_names(fabric_credential_node)
+                    #     for attribute_name in node_attributes:
+                    #         logger.info(self.core.get_attribute(fabric_credential_node,attribute_name))
+                    #         fabric_credential_attribute_values.append(self.core.get_attribute(fabric_credential_node,attribute_name))
+                    #     if None in fabric_credential_attribute_values or '' in fabric_credential_attribute_values:
+                    #         raise Exception ("Missing value in Fabric credential file")
                         # logger.info(f"All values in fabric credential: {fabric_credential_attribute_values} ")
 
                         
@@ -117,12 +149,12 @@ class createFabFile(PluginBase):
                     chi_credential_attribute_values=[]
                     if self.chi_credential==False:
                         raise Exception ("No chi credential associated with experiment")
-                    elif self.chi_credential==True:
-                        node_attributes = self.core.get_attribute_names(chi_credential_node)
-                        for attribute_name in node_attributes:
-                            chi_credential_attribute_values.append(self.core.get_attribute(chi_credential_node,attribute_name))
-                        if None in chi_credential_attribute_values or '' in chi_credential_attribute_values:
-                            raise Exception ("Missing value in Chi credential file")
+                    # elif self.chi_credential==True:
+                    #     node_attributes = self.core.get_attribute_names(chi_credential_node)
+                    #     for attribute_name in node_attributes:
+                    #         chi_credential_attribute_values.append(self.core.get_attribute(chi_credential_node,attribute_name))
+                    #     if None in chi_credential_attribute_values or '' in chi_credential_attribute_values:
+                    #         raise Exception ("Missing value in Chi credential file")
                         # logger.info(f"All values in fabric credential: {chi_credential_attribute_values} ")
                     
                 
@@ -134,24 +166,24 @@ class createFabFile(PluginBase):
                     fabric_credential_attribute_values=[]
                     if self.fabric_credential==False:
                         raise Exception ("No fabric credential associated with experiment")
-                    elif not fabric_credential_attribute_values and self.fabric_credential==True:
-                        node_attributes = self.core.get_attribute_names(fabric_credential_node)
-                        for attribute_name in node_attributes:
-                            fabric_credential_attribute_values.append(self.core.get_attribute(fabric_credential_node,attribute_name))
-                        if None in fabric_credential_attribute_values or '' in fabric_credential_attribute_values:
-                            raise Exception ("Missing value in Fabric credential file")
+                    # elif not fabric_credential_attribute_values and self.fabric_credential==True:
+                    #     node_attributes = self.core.get_attribute_names(fabric_credential_node)
+                    #     for attribute_name in node_attributes:
+                    #         fabric_credential_attribute_values.append(self.core.get_attribute(fabric_credential_node,attribute_name))
+                    #     if None in fabric_credential_attribute_values or '' in fabric_credential_attribute_values:
+                    #         raise Exception ("Missing value in Fabric credential file")
                     
 
                 elif self.core.is_instance_of(node, self.META['ChiNetwork']):
                     chi_credential_attribute_values=[]
                     if self.chi_credential==False:
                         raise Exception ("No chi credential associated with experiment")
-                    elif not chi_credential_attribute_values and self.chi_credential==True:
-                        node_attributes = self.core.get_attribute_names(chi_credential_node)
-                        for attribute_name in node_attributes:
-                            chi_credential_attribute_values.append(self.core.get_attribute(chi_credential_node,attribute_name))
-                        if None in chi_credential_attribute_values or '' in chi_credential_attribute_values:
-                            raise Exception ("Missing value in Chi credential file")
+                    # elif not chi_credential_attribute_values and self.chi_credential==True:
+                    #     node_attributes = self.core.get_attribute_names(chi_credential_node)
+                    #     for attribute_name in node_attributes:
+                    #         chi_credential_attribute_values.append(self.core.get_attribute(chi_credential_node,attribute_name))
+                    #     if None in chi_credential_attribute_values or '' in chi_credential_attribute_values:
+                    #         raise Exception ("Missing value in Chi credential file")
             
             if(self.core.is_instance_of(node,self.META['StitchConnection'])):
                 # logger.info(f"Stitch Network connections present in the experiment: {self.core.get_attribute(node, 'name')}")

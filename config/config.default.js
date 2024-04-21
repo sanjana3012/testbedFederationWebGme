@@ -5,7 +5,7 @@ var config = require('./config.webgme'),
     const path = require('path');
 
 // Add/overwrite any additional settings here
-// config.server.port = 8080;
+config.server.port = 8888;
 // config.mongo.uri = 'mongodb://127.0.0.1:27017/webgme_my_app';
 // Plugins
 config.plugin.allowServerExecution = true;

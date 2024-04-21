@@ -30,7 +30,7 @@ config.requirejsPaths = {
 };
 
 
-// config.mongo.uri = 'mongodb://mongo:27017/fabfed_project';
-config.mongo.uri = 'mongodb://127.0.0.1:27017/fabfed_project';
+config.mongo.uri = 'mongodb://mongo:27017/fabfed_project';
+//config.mongo.uri = 'mongodb://127.0.0.1:27017/fabfed_project';
 validateConfig(config);
 module.exports = config;
